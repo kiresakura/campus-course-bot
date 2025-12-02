@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+# 環境變數（重要！不要上傳 Token）
+.env
+
+# 快取資料（保留以便部署）
+# data/course_cache.json
+
+# 日誌
+logs/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store

@@ -1,0 +1,10 @@
+# NCKUHUB Discord Bot - Python 依賴套件
+
+# Discord Bot 框架
+discord.py>=2.3.0
+
+# 非同步 HTTP 請求
+aiohttp>=3.8.0
+
+# 環境變數管理
+python-dotenv>=1.0.0

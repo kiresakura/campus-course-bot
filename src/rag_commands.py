@@ -3,6 +3,7 @@ NCKUHUB Discord Bot - 李鴻章角色扮演指令
 """
 
 import os
+import re
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -112,11 +113,9 @@ class RAGCommands(commands.Cog):
         if not self.bot.user.mentioned_in(message):
             return
 
-        # 移除 @ 提及，取得實際問題內容
-        content = message.content
-        for mention in message.mentions:
-            content = content.replace(f'<@{mention.id}>', '').replace(f'<@!{mention.id}>', '')
-        content = content.strip()
+        # 移除所有 @ 提及，取得實際問題內容
+        # Discord mention 格式: <@123456> 或 <@!123456>
+        content = re.sub(r'<@!?\d+>', '', message.content).strip()
 
         # 如果沒有內容，顯示簡介
         if not content:

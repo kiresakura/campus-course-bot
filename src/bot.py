@@ -51,7 +51,14 @@ class NCKUHubBot(commands.Bot):
         """Bot 啟動時的初始化"""
         # 載入指令模組
         await self.load_extension('commands')
-        logger.info("已載入指令模組")
+        logger.info("已載入課程查詢指令模組")
+
+        # 載入李鴻章 RAG 指令模組
+        try:
+            await self.load_extension('rag_commands')
+            logger.info("已載入李鴻章角色扮演模組")
+        except Exception as e:
+            logger.warning(f"李鴻章模組載入失敗: {e}")
         
         # 同步 Slash Commands
         guild_id = os.getenv('GUILD_ID')

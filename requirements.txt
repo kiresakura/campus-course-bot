@@ -8,3 +8,6 @@ aiohttp>=3.8.0
 
 # 環境變數管理
 python-dotenv>=1.0.0
+
+# Claude API (RAG 角色扮演)
+anthropic>=0.39.0

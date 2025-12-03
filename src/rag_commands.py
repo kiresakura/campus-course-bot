@@ -97,9 +97,64 @@ class RAGCommands(commands.Cog):
             inline=False
         )
 
-        embed.set_footer(text="使用 /李鴻章 <問題> 與他對話")
+        embed.set_footer(text="使用 /李鴻章 <問題> 或 @李鴻章 與他對話")
 
         await interaction.response.send_message(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """監聽訊息，當用戶 @ Bot 時觸發對話"""
+        # 忽略 Bot 自己的訊息
+        if message.author.bot:
+            return
+
+        # 檢查是否有 @ Bot
+        if not self.bot.user.mentioned_in(message):
+            return
+
+        # 移除 @ 提及，取得實際問題內容
+        content = message.content
+        for mention in message.mentions:
+            content = content.replace(f'<@{mention.id}>', '').replace(f'<@!{mention.id}>', '')
+        content = content.strip()
+
+        # 如果沒有內容，顯示簡介
+        if not content:
+            embed = discord.Embed(
+                title="🏛️ 李鴻章",
+                description="吾乃李鴻章，字漸甫，號少荃。有何事要問老夫？\n\n直接 @我 並提出你的問題即可。",
+                color=0x8B4513
+            )
+            embed.set_footer(text="例如：@李鴻章 你對洋務運動有什麼看法？")
+            await message.reply(embed=embed)
+            return
+
+        # 檢查 RAG 是否可用
+        if not self.rag.is_available():
+            embed = discord.Embed(
+                title="⚠️ 服務不可用",
+                description="Claude API 尚未設定，無法進行對話。",
+                color=discord.Color.orange()
+            )
+            await message.reply(embed=embed)
+            return
+
+        # 顯示「正在輸入」狀態
+        async with message.channel.typing():
+            response = await self.rag.chat(content)
+
+        embed = discord.Embed(
+            title="🏛️ 李鴻章",
+            description=response,
+            color=0x8B4513
+        )
+        embed.set_footer(text="晚清重臣 • 洋務運動領袖 • 1823-1901")
+
+        # 如果回應太長，截斷
+        if len(response) > 4000:
+            embed.description = response[:4000] + "..."
+
+        await message.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot):

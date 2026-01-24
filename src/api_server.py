@@ -25,8 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 API 客戶端
-api = NCKUHubAPI()
+# 初始化 API 客戶端（Railway 執行時工作目錄是 src/，所以要指向上層的 data/）
+import os
+cache_dir = "../data" if os.path.exists("../data") else "data"
+api = NCKUHubAPI(cache_dir=cache_dir)
 
 
 # Response Models

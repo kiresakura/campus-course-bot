@@ -1,9 +1,10 @@
-"""NCKUHUB 課程資料抓取客戶端（網路層）。
+"""NCKUHUB course-data fetch client (network layer).
 
-注意：此處抓取的是第三方網站 nckuhub.com 的資料。請尊重對方服務：
-- 帶上可識別的 User-Agent
-- 控制並發並加入請求間隔/退避
-- 抓下來的資料僅供自行建立本地快取，請勿再散布（見 README / PRIVACY）。
+Note: this fetches data from the third-party site nckuhub.com. Be respectful:
+- send an identifying User-Agent
+- limit concurrency and add request spacing / backoff
+- the fetched data is only for building your own local cache — do not
+  redistribute it (see README / PRIVACY).
 """
 
 import asyncio
@@ -20,12 +21,12 @@ logger = logging.getLogger(__name__)
 
 class NCKUHubClient:
     BASE_URL = "https://nckuhub.com/course"
-    # 可識別的 User-Agent，方便對方辨識流量來源。
+    # Identifying User-Agent so the source can attribute the traffic.
     USER_AGENT = (
         "campus-course-bot/1.0 (self-hosted course-review bot; "
         "https://github.com/kiresakura/campus-course-bot)"
     )
-    REQUEST_DELAY = 0.5  # 每個請求之間的禮貌性間隔（秒）
+    REQUEST_DELAY = 0.5  # courtesy delay between requests (seconds)
 
     def __init__(self, cache: CourseCache):
         self.cache = cache
@@ -39,7 +40,7 @@ class NCKUHubClient:
         session: Optional[aiohttp.ClientSession] = None,
         retries: int = 3,
     ) -> Optional[Course]:
-        """抓取單一課程；失敗時做指數退避重試。"""
+        """Fetch a single course; retry with exponential backoff on failure."""
         own_session = session is None
         if own_session:
             session = aiohttp.ClientSession(headers=self._headers())
@@ -52,10 +53,10 @@ class NCKUHubClient:
                             return Course.from_api_response(await resp.json())
                         if resp.status == 404:
                             return None
-                        logger.warning("[API] 課程 %s 狀態碼 %s", course_id, resp.status)
+                        logger.warning("[API] course %s status %s", course_id, resp.status)
                 except Exception:
-                    logger.warning("[API] 抓取課程 %s 第 %d 次失敗", course_id, attempt + 1)
-                await asyncio.sleep(self.REQUEST_DELAY * (2 ** attempt))  # 退避
+                    logger.warning("[API] fetch course %s attempt %d failed", course_id, attempt + 1)
+                await asyncio.sleep(self.REQUEST_DELAY * (2 ** attempt))  # backoff
             return None
         finally:
             if own_session:
@@ -64,16 +65,16 @@ class NCKUHubClient:
     async def build_cache(
         self, start_id: int = 1, end_id: int = 15000, concurrency: int = 5
     ) -> int:
-        """並發掃描課程並建立本地快取，回傳總課程數。"""
+        """Concurrently scan courses and build the local cache; return the total count."""
         logger.info(
-            "[Cache] 開始掃描課程 %d ~ %d（並發 %d）", start_id, end_id, concurrency
+            "[Cache] scanning courses %d ~ %d (concurrency %d)", start_id, end_id, concurrency
         )
         semaphore = asyncio.Semaphore(concurrency)
 
         async def fetch_one(session: aiohttp.ClientSession, pid: int) -> Optional[Course]:
             async with semaphore:
                 course = await self.fetch_course(pid, session=session, retries=2)
-                await asyncio.sleep(self.REQUEST_DELAY)  # 禮貌性間隔
+                await asyncio.sleep(self.REQUEST_DELAY)  # courtesy delay
                 return course if (course and course.name) else None
 
         async with aiohttp.ClientSession(headers=self._headers()) as session:
@@ -98,8 +99,8 @@ class NCKUHubClient:
                                 "rate_count": course.rate_count,
                             }
                         )
-                logger.info("[Cache] 進度 %d/%d", min(i + batch_size, len(ids)), len(ids))
+                logger.info("[Cache] progress %d/%d", min(i + batch_size, len(ids)), len(ids))
 
         await asyncio.to_thread(self.cache.save)
-        logger.info("[Cache] 掃描完成，共 %d 門課程", len(self.cache.cache))
+        logger.info("[Cache] scan complete, %d courses total", len(self.cache.cache))
         return len(self.cache.cache)

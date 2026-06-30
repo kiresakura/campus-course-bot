@@ -1,7 +1,8 @@
-"""課程快取（純資料/查詢層，無網路、無平台 SDK）。
+"""Course cache (pure data/query layer; no network, no platform SDK).
 
-讀取本地 course_cache.json 並提供搜尋/排行查詢。模糊搜尋依賴 thefuzz，
-若該套件未安裝則自動退化為「精確包含比對」，不會讓整個程式無法啟動。
+Loads a local course_cache.json and provides search/ranking queries. Fuzzy search
+depends on thefuzz; if that package is missing it falls back to exact substring
+matching instead of crashing.
 """
 
 import json
@@ -12,17 +13,17 @@ from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# 模糊搜尋為選用：缺少 thefuzz 時退化為精確比對。
+# Fuzzy search is optional: fall back to exact matching when thefuzz is missing.
 try:
     from thefuzz import fuzz, process  # type: ignore
     _HAS_FUZZ = True
-except Exception:  # pragma: no cover - 取決於安裝環境
+except Exception:  # pragma: no cover - depends on the install environment
     _HAS_FUZZ = False
-    logger.warning("[Cache] 未安裝 thefuzz，模糊搜尋停用（僅精確比對）")
+    logger.warning("[Cache] thefuzz not installed; fuzzy search disabled (exact match only)")
 
 
 class CourseCache:
-    """記憶體內的課程資料與索引。"""
+    """In-memory course data and indexes."""
 
     def __init__(self, cache_file: str):
         self.cache_file = cache_file
@@ -31,11 +32,11 @@ class CourseCache:
         self.by_dept: Dict[str, List[str]] = {}
         self.load()
 
-    # -- 載入 / 儲存 -------------------------------------------------------
+    # -- load / save ------------------------------------------------------
     def load(self) -> None:
         if not os.path.exists(self.cache_file):
             logger.warning(
-                "[Cache] 找不到 %s，請先執行 build_cache.py 建立快取", self.cache_file
+                "[Cache] %s not found; run build_cache.py first", self.cache_file
             )
             return
         try:
@@ -44,12 +45,12 @@ class CourseCache:
             self.cache = data.get("courses", {})
             self.by_teacher = data.get("by_teacher", {})
             self.by_dept = data.get("by_dept", {})
-            logger.info("[Cache] 載入 %d 門課程", len(self.cache))
+            logger.info("[Cache] loaded %d courses", len(self.cache))
         except Exception:
-            logger.exception("[Cache] 載入失敗")
+            logger.exception("[Cache] load failed")
 
     def save(self) -> None:
-        """同步寫檔（呼叫端若在 async 內請用 asyncio.to_thread 包起來）。"""
+        """Synchronous write (wrap in asyncio.to_thread if calling from async code)."""
         os.makedirs(os.path.dirname(self.cache_file) or ".", exist_ok=True)
         payload = {
             "last_updated": datetime.now().isoformat(),
@@ -59,14 +60,14 @@ class CourseCache:
         }
         with open(self.cache_file, "w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
-        logger.info("[Cache] 已儲存 %d 門課程", len(self.cache))
+        logger.info("[Cache] saved %d courses", len(self.cache))
 
     @property
     def is_empty(self) -> bool:
         return not self.cache
 
     def add_course(self, course: dict) -> None:
-        """加入一門課並更新索引（供 build_cache 使用）。"""
+        """Add a course and update the indexes (used by build_cache)."""
         cid = course["id"]
         self.cache[cid] = course
         teacher = course.get("teacher")
@@ -80,7 +81,7 @@ class CourseCache:
             if cid not in self.by_dept[dept]:
                 self.by_dept[dept].append(cid)
 
-    # -- 查詢 --------------------------------------------------------------
+    # -- queries ----------------------------------------------------------
     def search_course(self, keyword: str, limit: int = 20) -> List[dict]:
         if self.is_empty or not keyword:
             return []

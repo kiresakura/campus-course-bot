@@ -1,9 +1,11 @@
-"""Telegram adapter（完整實作，polling 模式）。
+"""Telegram adapter (full implementation, polling mode).
 
-Telegram 的 bot 指令僅允許小寫英數與底線，因此中文指令以英文別名對應：
+Telegram bot commands only allow lowercase letters/digits/underscore, so the
+Chinese commands are exposed via English aliases:
   /search /professor /sweet /cold /compare /worst /detail
-回應以 Telegram HTML parse mode 呈現，並自動分段以符合 4096 字上限。
-SDK 採 lazy import：import 本模組不需安裝 python-telegram-bot。
+Replies use Telegram HTML parse mode and are chunked to fit the 4096-char limit.
+The SDK is lazy-imported: importing this module does not require python-telegram-bot.
+User-facing reply text is intentionally in Chinese.
 """
 
 import html
@@ -20,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 TELEGRAM_MSG_LIMIT = 4096
 
-# 英文指令 → 中文指令（Telegram 不支援非英數指令名）
+# English alias → Chinese command (Telegram disallows non-alphanumeric command names)
 COMMAND_ALIASES = {
     "search": "課程",
     "professor": "教授",
@@ -37,9 +39,9 @@ class TelegramAdapter(BotAdapter):
         super().__init__(service)
         self.token = token or os.getenv("TELEGRAM_BOT_TOKEN")
 
-    # -- 渲染 -------------------------------------------------------------
+    # -- render -----------------------------------------------------------
     def render(self, response: BotResponse) -> str:
-        """BotResponse → Telegram HTML 文字。"""
+        """BotResponse → Telegram HTML text."""
         def esc(s: object) -> str:
             return html.escape(str(s))
 
@@ -57,12 +59,12 @@ class TelegramAdapter(BotAdapter):
             parts.append("")
             parts.append(f"<i>{esc(response.footer)}</i>")
         text = "\n".join(parts).strip()
-        # `code` → <code>code</code>（反引號未被 html.escape 處理）
+        # `code` → <code>code</code> (backticks are not escaped by html.escape)
         return re.sub(r"`([^`]*)`", r"<code>\1</code>", text)
 
     @staticmethod
     def _chunk(text: str, limit: int = TELEGRAM_MSG_LIMIT):
-        """依換行切段，確保每段不超過 Telegram 上限。"""
+        """Split on newlines so each chunk stays under Telegram's limit."""
         chunks, cur = [], ""
         for line in text.split("\n"):
             if len(cur) + len(line) + 1 > limit:
@@ -90,7 +92,7 @@ class TelegramAdapter(BotAdapter):
             lines.append(f"/{html.escape(usage[en])} — {zh}")
         return "\n".join(lines)
 
-    # -- 指令分派 ---------------------------------------------------------
+    # -- command dispatch -------------------------------------------------
     async def _dispatch(self, zh_command: str, arg: str) -> BotResponse:
         s = self.service
         if zh_command == "課程":
@@ -119,9 +121,9 @@ class TelegramAdapter(BotAdapter):
                 return BotResponse(title="用法", description="/detail 課程ID（數字）")
         return BotResponse(title="未知指令", description=zh_command)
 
-    # -- 啟動 -------------------------------------------------------------
+    # -- start ------------------------------------------------------------
     def _build_app(self):
-        """建立 Application 並註冊所有 handler（需要 python-telegram-bot）。"""
+        """Build the Application and register all handlers (needs python-telegram-bot)."""
         from telegram.ext import Application, CommandHandler  # lazy
 
         app = Application.builder().token(self.token).build()
@@ -145,12 +147,12 @@ class TelegramAdapter(BotAdapter):
 
     def start(self) -> None:
         if not self.token:
-            raise RuntimeError("缺少 TELEGRAM_BOT_TOKEN（請設定環境變數或 .env）")
+            raise RuntimeError("Missing TELEGRAM_BOT_TOKEN (set it in the environment or .env)")
         try:
             app = self._build_app()
         except ImportError as exc:
             raise RuntimeError(
-                "未安裝 Telegram SDK，請執行：pip install python-telegram-bot==21.4"
+                "Telegram SDK not installed; run: pip install python-telegram-bot==21.4"
             ) from exc
-        logger.info("Telegram adapter 啟動（polling）…")
+        logger.info("Telegram adapter starting (polling)...")
         app.run_polling()

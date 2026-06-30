@@ -1,4 +1,6 @@
-"""Telegram / LINE adapter 邏輯測試（不需 SDK、不需網路、不起 server）。"""
+"""Telegram / LINE adapter logic tests (no SDK, no network, no server needed).
+
+Chinese strings below are test data / production UI strings the code returns."""
 
 import asyncio
 import base64
@@ -16,7 +18,7 @@ def test_telegram_render_html_escapes():
     a = TelegramAdapter(service=None)
     out = a.render(BotResponse(title="A & B <x>", description="d"))
     assert "<b>A &amp; B &lt;x&gt;</b>" in out
-    assert "<x>" not in out  # 角括號已被跳脫
+    assert "<x>" not in out  # angle brackets are escaped
 
 
 def test_telegram_render_backtick_to_code():
@@ -42,7 +44,7 @@ def test_telegram_dispatch_search(service):
 
 def test_telegram_dispatch_compare_needs_two(service):
     a = TelegramAdapter(service=service)
-    resp = asyncio.run(a._dispatch("比較", "微積分"))  # 只有一個參數
+    resp = asyncio.run(a._dispatch("比較", "微積分"))  # only one argument
     assert resp.title == "用法"
 
 
@@ -92,7 +94,7 @@ def test_line_build_app_routes(service):
 
 
 def test_line_callback_end_to_end(service):
-    """真正起一個 aiohttp 測試 server，打 /callback（含簽章驗證）。"""
+    """Actually start an aiohttp test server and hit /callback (with signature check)."""
     from aiohttp.test_utils import TestClient, TestServer
 
     sent = []
@@ -102,7 +104,7 @@ def test_line_callback_end_to_end(service):
 
     async def run():
         a = LineAdapter(service=service, channel_access_token="x", channel_secret="s")
-        a._send_reply = fake_send  # 攔截對外 LINE API 呼叫
+        a._send_reply = fake_send  # intercept the outbound LINE API call
         body = json.dumps(
             {"events": [{"type": "message", "replyToken": "RT", "message": {"type": "text", "text": "課程 微積分"}}]}
         ).encode()

@@ -1,7 +1,8 @@
-"""課程快取建立腳本：掃描 NCKUHUB 課程 ID 並建立本地快取。
+"""Cache-building script: scan NCKUHUB course IDs and build a local cache.
 
-注意：抓下來的資料僅供你「自行建立本地快取」使用。請勿將 data/course_cache.json
-再次散布或上傳到公開倉庫（已於 .gitignore 排除）。詳見 PRIVACY.md。
+Note: the fetched data is for building your *own* local cache only. Do not
+redistribute or upload data/course_cache.json to a public repo (it is already
+excluded via .gitignore). See PRIVACY.md.
 """
 
 import asyncio
@@ -25,14 +26,14 @@ async def main():
     else:
         start_from = 1
 
-    print(f"[Info] 目前快取 {len(cache.cache)} 門課程，從 ID {start_from} 開始")
+    print(f"[info] current cache has {len(cache.cache)} courses; starting from ID {start_from}")
 
     total = await client.build_cache(start_id=start_from, end_id=15000, concurrency=5)
 
-    print("\n✅ 快取建立完成！")
-    print(f"📊 共 {total} 門課程")
-    print(f"👨‍🏫 共 {len(cache.by_teacher)} 位教授")
-    print(f"🏫 共 {len(cache.by_dept)} 個系所")
+    print("\n[done] cache build complete")
+    print(f"  courses:     {total}")
+    print(f"  professors:  {len(cache.by_teacher)}")
+    print(f"  departments: {len(cache.by_dept)}")
 
 
 if __name__ == "__main__":

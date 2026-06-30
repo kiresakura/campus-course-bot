@@ -1,4 +1,5 @@
-"""回應渲染測試：中性 Markdown（平台無關）＋ Discord Embed（若有安裝 discord）。"""
+"""Response rendering tests: neutral Markdown (platform-agnostic) + Discord Embed
+(when discord is installed). Sample text is Chinese to mirror the production UI."""
 
 import pytest
 
@@ -22,7 +23,7 @@ def test_to_markdown_contains_content():
 def test_telegram_render_is_text():
     from adapters.telegram_adapter import TelegramAdapter
 
-    adapter = TelegramAdapter(service=None)  # render 不需要 service
+    adapter = TelegramAdapter(service=None)  # render does not need a service
     out = adapter.render(_sample())
     assert isinstance(out, str)
     assert "測試課程" in out
@@ -41,7 +42,7 @@ def test_discord_render_to_embed():
     discord = pytest.importorskip("discord")
     from adapters.discord_adapter import DiscordAdapter
 
-    # 用假 token 建構（離線，不連線）
+    # construct with a fake token (offline; never connects)
     adapter = DiscordAdapter(service=None, token="dummy-token")
     embed = adapter.render(_sample())
     assert isinstance(embed, discord.Embed)

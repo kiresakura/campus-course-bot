@@ -1,4 +1,7 @@
-"""CourseService 行為測試（純邏輯，無網路）。"""
+"""CourseService behavior tests (pure logic, no network).
+
+Assertions check the production UI strings, which are intentionally Chinese.
+"""
 
 import asyncio
 
@@ -14,7 +17,7 @@ def test_search_finds_course(service):
 
 def test_search_by_teacher(service):
     resp = service.search("王小明")
-    # 王小明 教兩門課（微積分、程式設計）
+    # 王小明 teaches two courses (微積分, 程式設計)
     names = " ".join(f.name for f in resp.fields)
     assert "微積分" in names and "程式設計" in names
 
@@ -34,14 +37,14 @@ def test_professor_average(service):
 def test_top_sweet_orders_by_sweet(service):
     resp = service.top_sweet()
     assert resp.style == ResponseStyle.SWEET
-    # 最甜的是微積分 (8.0)
+    # sweetest is 微積分 (8.0)
     assert "微積分" in resp.fields[0].name
 
 
 def test_top_cold_orders_by_cold(service):
     resp = service.top_cold()
     assert resp.style == ResponseStyle.COLD
-    # 最涼的是大學英文 (9.0)
+    # easiest is 大學英文 (9.0)
     assert "大學英文" in resp.fields[0].name
 
 
@@ -49,7 +52,7 @@ def test_worst_has_disclaimer(service):
     resp = service.worst()
     assert resp.style == ResponseStyle.DANGER
     assert "僅供參考" in resp.footer
-    # 最雷的是冷門課（平均最低且 rate_count>=3）
+    # worst is 冷門課 (lowest average with rate_count>=3)
     assert "冷門課" in resp.fields[0].name
 
 

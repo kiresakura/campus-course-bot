@@ -1,7 +1,10 @@
-"""Discord adapter（預設平台）。
+"""Discord adapter (default platform).
 
-discord SDK 採 lazy import：import 本模組不需要安裝 discord，
-只有實際建立/啟動 adapter 時才需要。
+The discord SDK is lazy-imported: importing this module does not require discord
+to be installed; it is only needed when actually building/starting the adapter.
+
+Note: command names and user-facing text are intentionally in Chinese (the bot
+serves a Chinese-speaking campus audience).
 """
 
 import logging
@@ -14,7 +17,7 @@ from .base import BotAdapter
 
 logger = logging.getLogger(__name__)
 
-# 語意化樣式 → Discord 顏色
+# Semantic style → Discord color
 _STYLE_COLORS = {
     ResponseStyle.PRIMARY: 0x5865F2,
     ResponseStyle.SUCCESS: 0x57F287,
@@ -29,7 +32,7 @@ class DiscordAdapter(BotAdapter):
     def __init__(self, service: CourseService, token: str, guild_id: Optional[str] = None):
         super().__init__(service)
         if not token:
-            raise ValueError("缺少 DISCORD_TOKEN")
+            raise ValueError("Missing DISCORD_TOKEN")
         self.token = token
         self.guild_id = guild_id
         self._synced = False
@@ -37,11 +40,11 @@ class DiscordAdapter(BotAdapter):
         import discord  # lazy
         from discord.ext import commands as discord_commands
 
-        intents = discord.Intents.default()  # 只用 slash command，不需 message_content
+        intents = discord.Intents.default()  # slash commands only; no message_content
         self.bot = discord_commands.Bot(command_prefix="!", intents=intents, help_command=None)
         self._register()
 
-    # -- 渲染 -------------------------------------------------------------
+    # -- render -----------------------------------------------------------
     def render(self, response: BotResponse):
         import discord  # lazy
 
@@ -56,7 +59,7 @@ class DiscordAdapter(BotAdapter):
             embed.set_footer(text=response.footer)
         return embed
 
-    # -- 指令註冊 ---------------------------------------------------------
+    # -- command registration ---------------------------------------------
     def _register(self) -> None:
         import discord
         from discord import app_commands
@@ -112,18 +115,18 @@ class DiscordAdapter(BotAdapter):
                     guild = discord.Object(id=int(guild_id))
                     bot.tree.copy_global_to(guild=guild)
                     await bot.tree.sync(guild=guild)
-                    logger.info("已同步指令到測試伺服器 %s", guild_id)
+                    logger.info("synced commands to test guild %s", guild_id)
                 else:
                     await bot.tree.sync()
-                    logger.info("已全域同步指令")
+                    logger.info("synced commands globally")
                 self._synced = True
             await bot.change_presence(
                 activity=discord.Activity(
                     type=discord.ActivityType.watching, name="課程評價 | /課程（非官方）"
                 )
             )
-            logger.info("✅ 已登入：%s", bot.user)
+            logger.info("logged in as %s", bot.user)
 
     def start(self) -> None:
-        """阻塞式啟動（discord.py 自行管理事件迴圈）。"""
+        """Blocking start (discord.py manages its own event loop)."""
         self.bot.run(self.token)

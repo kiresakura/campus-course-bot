@@ -1,7 +1,8 @@
-"""核心資料模型與「中性回應模型」。
+"""Core data models and the neutral response model.
 
-BotResponse 是平台無關的回應格式，由各 adapter 自行渲染成
-Discord Embed / Telegram 訊息 / LINE Flex 等。core 內不得 import 任何平台 SDK。
+BotResponse is a platform-agnostic response that each adapter renders into a
+Discord Embed / Telegram message / LINE message, etc. The core must not import
+any chat-platform SDK.
 """
 
 from dataclasses import dataclass, field, asdict
@@ -10,7 +11,7 @@ from typing import List, Dict, Optional
 
 
 # ---------------------------------------------------------------------------
-# 課程資料
+# Course data
 # ---------------------------------------------------------------------------
 @dataclass
 class Course:
@@ -21,19 +22,20 @@ class Course:
     credits: int = 0
     time: str = ""
     classroom: str = ""
-    sweet: float = 0.0      # 甜度
-    cold: float = 0.0       # 涼度
-    got: float = 0.0        # 收穫
-    rate_count: int = 0     # 評分人數
+    sweet: float = 0.0      # sweetness
+    cold: float = 0.0       # easiness
+    got: float = 0.0        # takeaway
+    rate_count: int = 0     # number of ratings
     comments: Optional[List[Dict]] = None
 
     @classmethod
     def from_api_response(cls, data: dict) -> Optional["Course"]:
-        """從 NCKUHUB 端點回應建立 Course 物件。"""
+        """Build a Course from an NCKUHUB endpoint response."""
         if not data or "courseInfo" not in data:
             return None
 
         info = data["courseInfo"]
+        # NOTE: the Chinese keys below are the actual NCKUHUB API field names.
         return cls(
             id=str(info.get("id", "")),
             name=info.get("課程名稱", ""),
@@ -54,10 +56,10 @@ class Course:
 
 
 # ---------------------------------------------------------------------------
-# 中性回應模型（平台無關）
+# Neutral response model (platform-agnostic)
 # ---------------------------------------------------------------------------
 class ResponseStyle(Enum):
-    """語意化樣式；各 adapter 對應到自己的顏色/排版。"""
+    """Semantic style; each adapter maps it to its own color/layout."""
 
     PRIMARY = "primary"
     SUCCESS = "success"
@@ -76,7 +78,7 @@ class ResponseField:
 
 @dataclass
 class BotResponse:
-    """一則平台無關的回應。"""
+    """A single platform-agnostic response."""
 
     title: str
     description: str = ""
@@ -89,7 +91,7 @@ class BotResponse:
         return self
 
     def to_markdown(self) -> str:
-        """渲染成純文字/Markdown，供 Telegram / LINE / CLI 等使用。"""
+        """Render to plain text / Markdown for Telegram / LINE / CLI, etc."""
         lines: List[str] = []
         if self.title:
             lines.append(f"**{self.title}**")

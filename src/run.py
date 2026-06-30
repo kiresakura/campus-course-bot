@@ -1,9 +1,9 @@
-"""campus-course-bot 進入點。
+"""campus-course-bot entrypoint.
 
-依環境變數 BOT_PLATFORM（或 --platform）選擇要啟動的平台 adapter：
-discord（預設）/ telegram / line。
+Selects which platform adapter to start based on the BOT_PLATFORM environment
+variable (or --platform): discord (default) / telegram / line.
 
-非官方專案，與 NCKUHUB 及成功大學無任何隸屬關係。
+Unofficial project, not affiliated with NCKUHUB or National Cheng Kung University.
 """
 
 import argparse
@@ -11,7 +11,7 @@ import logging
 import os
 import sys
 
-# 確保可以找到同目錄的 core / adapters 套件
+# Make sure the sibling core / adapters packages are importable
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from dotenv import load_dotenv
@@ -25,7 +25,7 @@ load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 
 def build_adapter(platform: str, service: CourseService):
-    """依平台名稱建立 adapter（SDK 在各 adapter 內 lazy import）。"""
+    """Build an adapter by platform name (SDKs are lazy-imported inside each adapter)."""
     platform = (platform or "discord").lower()
     if platform == "discord":
         from adapters.discord_adapter import DiscordAdapter
@@ -41,18 +41,18 @@ def build_adapter(platform: str, service: CourseService):
         from adapters.line_adapter import LineAdapter
 
         return LineAdapter(service)
-    raise RuntimeError(f"未知平台「{platform}」（可用：discord / telegram / line）")
+    raise RuntimeError(f"Unknown platform '{platform}' (available: discord / telegram / line)")
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="campus-course-bot",
-        description="多平台課程評價查詢機器人（非官方，與 NCKUHUB／成功大學無隸屬關係）。",
+        description="Multi-platform course-review bot (unofficial; not affiliated with NCKUHUB / NCKU).",
     )
     parser.add_argument(
         "--platform",
         default=os.getenv("BOT_PLATFORM", "discord"),
-        help="要啟動的平台：discord（預設）/ telegram / line",
+        help="Platform to start: discord (default) / telegram / line",
     )
     args = parser.parse_args(argv)
 
@@ -63,17 +63,17 @@ def main(argv=None) -> int:
 
     service = CourseService(CACHE_FILE)
     if service.cache.is_empty:
-        logging.warning("課程快取為空，請先執行：python build_cache.py")
+        logging.warning("Course cache is empty; run: python build_cache.py")
 
     try:
         adapter = build_adapter(args.platform, service)
         adapter.start()
     except (RuntimeError, ValueError) as exc:
-        # 對使用者顯示乾淨訊息，不噴 traceback
-        print(f"❌ 無法啟動 {args.platform} adapter：{exc}", file=sys.stderr)
+        # Show a clean message to the operator; never dump a traceback
+        print(f"[error] Failed to start {args.platform} adapter: {exc}", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
-        print("\n已停止。")
+        print("\nStopped.")
         return 0
     return 0
 

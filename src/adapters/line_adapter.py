@@ -1,13 +1,15 @@
-"""LINE adapter（完整實作，Webhook 模式）。
+"""LINE adapter (full implementation, webhook mode).
 
-LINE 採 Webhook：需要一個對外 HTTPS endpoint 接收 callback。本實作直接使用
-專案既有的 aiohttp 架一個極小的 web server，**不需要 line-bot-sdk**：
-- POST /callback：驗證 X-Line-Signature（HMAC-SHA256 + base64），解析事件，
-  以 reply token 透過 Messaging API 回覆。
-- GET  /health：健康檢查。
+LINE uses a webhook: it needs a public HTTPS endpoint to receive callbacks. This
+implementation uses the project's existing aiohttp to run a tiny web server, so
+**no line-bot-sdk is required**:
+- POST /callback: verify X-Line-Signature (HMAC-SHA256 + base64), parse events,
+  and reply via the Messaging API using the reply token.
+- GET  /health: health check.
 
-部署注意：LINE 要求 webhook 必須是 HTTPS。請放在反向代理／平台（Railway 等）後方，
-把對外網址設定到 LINE Developers Console 的 Webhook URL（指向 /callback）。
+Deployment note: LINE requires the webhook to be HTTPS. Put it behind a reverse
+proxy / platform (e.g. Railway) and set the public URL as the Webhook URL in the
+LINE Developers Console (pointing at /callback). User-facing replies are in Chinese.
 """
 
 import base64
@@ -43,13 +45,13 @@ class LineAdapter(BotAdapter):
         self.host = host
         self.port = int(port or os.getenv("PORT", "8000"))
 
-    # -- 渲染 -------------------------------------------------------------
+    # -- render -----------------------------------------------------------
     def render(self, response: BotResponse) -> str:
-        """LINE 以純文字訊息呈現（去除 Markdown 記號，並截到上限）。"""
+        """Render as a LINE plain-text message (strip Markdown marks, clamp to the limit)."""
         text = response.to_markdown().replace("**", "").replace("`", "").replace("_", "")
         return text[:LINE_TEXT_LIMIT]
 
-    # -- 簽章驗證（stdlib，無需 SDK） ------------------------------------
+    # -- signature verification (stdlib, no SDK) --------------------------
     def verify_signature(self, body: bytes, signature: str) -> bool:
         if not self.channel_secret or not signature:
             return False
@@ -57,9 +59,9 @@ class LineAdapter(BotAdapter):
         expected = base64.b64encode(mac).decode("utf-8")
         return hmac.compare_digest(expected, signature)
 
-    # -- 指令解析 ---------------------------------------------------------
+    # -- command parsing --------------------------------------------------
     async def parse_and_reply(self, user_text: str) -> str:
-        """把使用者輸入（「<指令> <參數>」）轉成回覆文字。"""
+        """Turn user input ("<command> <arg>") into reply text."""
         parts = user_text.strip().split(maxsplit=1)
         command = parts[0] if parts else ""
         arg = parts[1] if len(parts) > 1 else ""
@@ -90,11 +92,11 @@ class LineAdapter(BotAdapter):
         return "可用指令：課程 / 教授 / 甜課 / 涼課 / 比較 / 雷課 / 詳細\n例如：課程 微積分"
 
     async def handle_webhook_body(self, body: bytes) -> List[Tuple[str, str]]:
-        """解析「已通過簽章驗證」的 webhook body，回傳 (reply_token, 回覆文字) 清單。"""
+        """Parse a signature-verified webhook body into a list of (reply_token, reply_text)."""
         try:
             payload = json.loads(body.decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
-            logger.warning("[LINE] 無法解析 webhook body")
+            logger.warning("[LINE] could not parse webhook body")
             return []
         replies: List[Tuple[str, str]] = []
         for event in payload.get("events", []):
@@ -117,9 +119,9 @@ class LineAdapter(BotAdapter):
         try:
             async with session.post(LINE_REPLY_URL, headers=headers, json=payload) as resp:
                 if resp.status != 200:
-                    logger.warning("[LINE] reply 失敗 status=%s", resp.status)
+                    logger.warning("[LINE] reply failed status=%s", resp.status)
         except Exception:
-            logger.exception("[LINE] reply 發送失敗")
+            logger.exception("[LINE] reply send failed")
 
     # -- HTTP handlers ----------------------------------------------------
     async def _health(self, request):
@@ -133,7 +135,7 @@ class LineAdapter(BotAdapter):
         signature = request.headers.get("X-Line-Signature", "")
         body = await request.read()
         if not self.verify_signature(body, signature):
-            logger.warning("[LINE] 簽章驗證失敗，拒絕請求")
+            logger.warning("[LINE] signature verification failed; rejecting request")
             return web.Response(status=403, text="invalid signature")
         replies = await self.handle_webhook_body(body)
         if replies:
@@ -143,7 +145,7 @@ class LineAdapter(BotAdapter):
         return web.Response(text="ok")
 
     def _build_app(self):
-        """建立 aiohttp webhook server（/callback、/health）。"""
+        """Build the aiohttp webhook server (/callback, /health)."""
         from aiohttp import web
 
         app = web.Application()
@@ -151,17 +153,17 @@ class LineAdapter(BotAdapter):
         app.router.add_post("/callback", self._callback)
         return app
 
-    # -- 啟動 -------------------------------------------------------------
+    # -- start ------------------------------------------------------------
     def start(self) -> None:
-        from aiohttp import web  # aiohttp 為核心依賴
+        from aiohttp import web  # aiohttp is a core dependency
 
         if not (self.channel_access_token and self.channel_secret):
             raise RuntimeError(
-                "缺少 LINE_CHANNEL_ACCESS_TOKEN / LINE_CHANNEL_SECRET（請設定環境變數或 .env）"
+                "Missing LINE_CHANNEL_ACCESS_TOKEN / LINE_CHANNEL_SECRET (set them in the environment or .env)"
             )
         app = self._build_app()
         logger.info(
-            "[LINE] webhook 啟動於 %s:%s（請以 HTTPS 對外，Webhook URL 指向 /callback）",
+            "[LINE] webhook listening on %s:%s (expose over HTTPS; point the Webhook URL at /callback)",
             self.host,
             self.port,
         )

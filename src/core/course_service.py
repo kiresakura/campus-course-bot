@@ -1,6 +1,8 @@
-"""課程查詢服務（平台無關）。
+"""Course query service (platform-agnostic).
 
-每個方法回傳一個 BotResponse，由各 adapter 渲染。此層不得 import 任何平台 SDK。
+Each method returns a BotResponse that the adapters render. This layer must not
+import any platform SDK. Note: user-facing strings are intentionally in Chinese
+(the bot serves a Chinese-speaking campus audience).
 """
 
 import logging
@@ -29,13 +31,13 @@ def _score_emoji(score: float) -> str:
 
 
 class CourseService:
-    """課程查詢核心邏輯。"""
+    """Core course-query logic."""
 
     def __init__(self, cache_file: str):
         self.cache = CourseCache(cache_file)
         self.client = NCKUHubClient(self.cache)
 
-    # -- 內部小工具 -------------------------------------------------------
+    # -- internal helpers -------------------------------------------------
     def _course_card(self, course: dict, style: ResponseStyle = ResponseStyle.PRIMARY) -> BotResponse:
         sweet = course.get("sweet", 0)
         cold = course.get("cold", 0)
@@ -56,7 +58,7 @@ class CourseService:
     def _not_found(title: str, desc: str) -> BotResponse:
         return BotResponse(title=title, description=desc, style=ResponseStyle.WARNING)
 
-    # -- 指令 -------------------------------------------------------------
+    # -- commands ---------------------------------------------------------
     def search(self, keyword: str) -> BotResponse:
         results = self.cache.search_course(keyword)
         if not results:
@@ -155,11 +157,11 @@ class CourseService:
         return resp
 
     async def detail(self, course_id: int) -> BotResponse:
-        """即時抓取課程完整資訊（含心得）。"""
+        """Fetch full course info (including comments) live."""
         try:
             course = await self.client.fetch_course(course_id)
         except Exception:
-            logger.exception("[detail] 抓取課程 %s 失敗", course_id)
+            logger.exception("[detail] failed to fetch course %s", course_id)
             return self._not_found("⚠️ 暫時無法查詢", "查詢課程時發生問題，請稍後再試。")
         if not course:
             return BotResponse(

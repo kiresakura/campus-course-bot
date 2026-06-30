@@ -1,1 +1,1 @@
-"""平台無關的課程查詢核心（不依賴任何聊天平台 SDK）。"""
+"""Platform-agnostic course-query core (no chat-platform SDK dependency)."""

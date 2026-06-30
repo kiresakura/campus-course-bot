@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-01-01T00:00:00",
+  "courses": {
+    "1": {"id": "1", "name": "微積分", "dept": "數學系 MATH", "teacher": "王小明", "time": "", "classroom": "", "sweet": 8.0, "cold": 6.0, "got": 9.0, "rate_count": 10},
+    "2": {"id": "2", "name": "大學英文", "dept": "外語中心 FLC", "teacher": "李大華", "time": "", "classroom": "", "sweet": 5.0, "cold": 9.0, "got": 4.0, "rate_count": 5},
+    "3": {"id": "3", "name": "程式設計", "dept": "資訊系 CSIE", "teacher": "王小明", "time": "", "classroom": "", "sweet": 7.0, "cold": 4.0, "got": 8.0, "rate_count": 8},
+    "4": {"id": "4", "name": "冷門課", "dept": "歷史系 HIST", "teacher": "陳老師", "time": "", "classroom": "", "sweet": 2.0, "cold": 3.0, "got": 2.0, "rate_count": 4}
+  },
+  "by_teacher": {
+    "王小明": ["1", "3"],
+    "李大華": ["2"],
+    "陳老師": ["4"]
+  },
+  "by_dept": {
+    "數學系 MATH": ["1"],
+    "外語中心 FLC": ["2"],
+    "資訊系 CSIE": ["3"],
+    "歷史系 HIST": ["4"]
+  }
+}

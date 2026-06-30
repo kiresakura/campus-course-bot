@@ -1,5 +1,7 @@
 # campus-course-bot 🎓
 
+[![CI](https://github.com/kiresakura/campus-course-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/kiresakura/campus-course-bot/actions/workflows/ci.yml)
+
 > A multi-platform course-review query bot (Discord / Telegram / LINE) — search by
 > keyword and see "sweetness / easiness / takeaway" ratings to pick courses with confidence.
 

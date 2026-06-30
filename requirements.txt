@@ -14,6 +14,6 @@ python-dotenv==1.0.1
 thefuzz==0.22.1
 python-Levenshtein==0.25.1
 
-# --- 選用：其他平台 adapter 的 SDK（需要時才安裝） ---
-# Telegram:  pip install python-telegram-bot==21.4
-# LINE:      pip install line-bot-sdk==3.11.0
+# --- 選用：其他平台（需要時才安裝） ---
+# Telegram (polling):  pip install python-telegram-bot==21.4
+# LINE (webhook):      不需額外 SDK（使用內建 aiohttp）；需對外 HTTPS endpoint

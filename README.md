@@ -44,11 +44,11 @@ src/
 
 新增一個平台 = 繼承 `BotAdapter`，實作 `render(BotResponse)` 與 `start()`，核心邏輯完全重用。
 
-| 平台 | 狀態 | 需要的 SDK |
-|------|------|-----------|
-| Discord | ✅ 已實作 | `discord.py`（預設安裝） |
-| Telegram | 🧪 可運作骨架 | `pip install python-telegram-bot==21.4` |
-| LINE | 🧪 骨架（需自建 Webhook） | `pip install line-bot-sdk==3.11.0` |
+| 平台 | 狀態 | 連線方式 | 需要的 SDK |
+|------|------|---------|-----------|
+| Discord | ✅ 已實作 | Slash Commands（長連線） | `discord.py`（預設安裝） |
+| Telegram | ✅ 已實作 | Polling | `pip install python-telegram-bot==21.4` |
+| LINE | ✅ 已實作 | Webhook（需對外 HTTPS） | 不需額外 SDK（內建 aiohttp） |
 
 ## 🚀 快速開始
 
@@ -66,6 +66,29 @@ python build_cache.py
 # 4) 啟動（預設 Discord；或用 BOT_PLATFORM=telegram / line）
 python src/run.py
 ```
+
+## 🛰️ 各平台設定
+
+用環境變數 `BOT_PLATFORM` 切換平台（`discord` / `telegram` / `line`）。
+
+**Discord**（Slash Commands）
+```bash
+BOT_PLATFORM=discord DISCORD_TOKEN=xxx python src/run.py
+```
+邀請 bot 進伺服器後即可用：`/課程 /教授 /甜課 /涼課 /比較 /雷課 /詳細`。
+
+**Telegram**（Polling）
+```bash
+pip install python-telegram-bot==21.4
+BOT_PLATFORM=telegram TELEGRAM_BOT_TOKEN=xxx python src/run.py
+```
+向 [@BotFather](https://t.me/BotFather) 取得 token。指令用英文別名：`/search /professor /sweet /cold /compare /worst /detail`（`/help` 看用法）。
+
+**LINE**（Webhook，需 HTTPS）
+```bash
+BOT_PLATFORM=line LINE_CHANNEL_ACCESS_TOKEN=xxx LINE_CHANNEL_SECRET=yyy PORT=8000 python src/run.py
+```
+本服務會在 `PORT` 起一個 `/callback` endpoint（內含 `X-Line-Signature` HMAC 驗證，拒絕未簽章請求）。請以 HTTPS 對外（反向代理或 Railway 等），並在 LINE Developers Console 把 Webhook URL 設為 `https://你的網域/callback`。使用者輸入「課程 微積分」「詳細 1234」等即可。
 
 ## 🗃️ 建立你自己的快取（重要）
 

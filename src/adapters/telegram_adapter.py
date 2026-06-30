@@ -1,14 +1,15 @@
-"""Telegram adapter。
-
-狀態：可運作的骨架（render 已完整實作；start 會在 SDK/權杖缺失時給出
-清楚的錯誤訊息，而非 traceback）。完整的指令互動細節可作為後續強化。
+"""Telegram adapter（完整實作，polling 模式）。
 
 Telegram 的 bot 指令僅允許小寫英數與底線，因此中文指令以英文別名對應：
   /search /professor /sweet /cold /compare /worst /detail
+回應以 Telegram HTML parse mode 呈現，並自動分段以符合 4096 字上限。
+SDK 採 lazy import：import 本模組不需安裝 python-telegram-bot。
 """
 
+import html
 import logging
 import os
+import re
 from typing import Optional
 
 from core.course_service import CourseService
@@ -17,7 +18,9 @@ from .base import BotAdapter
 
 logger = logging.getLogger(__name__)
 
-# 中文指令 → 英文別名（Telegram 不支援非英數指令名）
+TELEGRAM_MSG_LIMIT = 4096
+
+# 英文指令 → 中文指令（Telegram 不支援非英數指令名）
 COMMAND_ALIASES = {
     "search": "課程",
     "professor": "教授",
@@ -30,41 +33,65 @@ COMMAND_ALIASES = {
 
 
 class TelegramAdapter(BotAdapter):
-    def __init__(self, service: CourseService, token: Optional[str] = None):
+    def __init__(self, service: Optional[CourseService], token: Optional[str] = None):
         super().__init__(service)
         self.token = token or os.getenv("TELEGRAM_BOT_TOKEN")
 
+    # -- 渲染 -------------------------------------------------------------
     def render(self, response: BotResponse) -> str:
-        """Telegram 以 Markdown 文字呈現。"""
-        return response.to_markdown()
+        """BotResponse → Telegram HTML 文字。"""
+        def esc(s: object) -> str:
+            return html.escape(str(s))
 
-    def start(self) -> None:
-        try:
-            from telegram.ext import Application, CommandHandler  # lazy
-        except ImportError as exc:
-            raise RuntimeError(
-                "未安裝 Telegram SDK，請執行：pip install python-telegram-bot==21.4"
-            ) from exc
-        if not self.token:
-            raise RuntimeError("缺少 TELEGRAM_BOT_TOKEN（請設定環境變數或 .env）")
+        parts = []
+        if response.title:
+            parts.append(f"<b>{esc(response.title)}</b>")
+        if response.description:
+            parts.append(esc(response.description))
+        for f in response.fields:
+            parts.append("")
+            parts.append(f"<b>{esc(f.name)}</b>")
+            if f.value:
+                parts.append(esc(f.value))
+        if response.footer:
+            parts.append("")
+            parts.append(f"<i>{esc(response.footer)}</i>")
+        text = "\n".join(parts).strip()
+        # `code` → <code>code</code>（反引號未被 html.escape 處理）
+        return re.sub(r"`([^`]*)`", r"<code>\1</code>", text)
 
-        app = Application.builder().token(self.token).build()
+    @staticmethod
+    def _chunk(text: str, limit: int = TELEGRAM_MSG_LIMIT):
+        """依換行切段，確保每段不超過 Telegram 上限。"""
+        chunks, cur = [], ""
+        for line in text.split("\n"):
+            if len(cur) + len(line) + 1 > limit:
+                if cur:
+                    chunks.append(cur)
+                cur = line[:limit]
+            else:
+                cur = f"{cur}\n{line}" if cur else line
+        if cur:
+            chunks.append(cur)
+        return chunks or [""]
 
-        def make_handler(zh_command: str):
-            async def handler(update, context):
-                arg = " ".join(context.args) if context.args else ""
-                resp = await self._dispatch(zh_command, arg)
-                await update.message.reply_markdown(self.render(resp))
-            return handler
+    def _help_text(self) -> str:
+        lines = ["<b>📚 campus-course-bot</b>", "（非官方課程評價查詢）", "", "可用指令："]
+        usage = {
+            "search": "search 微積分",
+            "professor": "professor 王小明",
+            "sweet": "sweet [系所]",
+            "cold": "cold [系所]",
+            "compare": "compare 課程A 課程B",
+            "worst": "worst [數量]",
+            "detail": "detail 1234",
+        }
+        for en, zh in COMMAND_ALIASES.items():
+            lines.append(f"/{html.escape(usage[en])} — {zh}")
+        return "\n".join(lines)
 
-        for en_command, zh_command in COMMAND_ALIASES.items():
-            app.add_handler(CommandHandler(en_command, make_handler(zh_command)))
-
-        logger.info("Telegram adapter 啟動中…")
-        app.run_polling()
-
+    # -- 指令分派 ---------------------------------------------------------
     async def _dispatch(self, zh_command: str, arg: str) -> BotResponse:
-        """把單一文字參數轉成對應的 service 呼叫。"""
         s = self.service
         if zh_command == "課程":
             return s.search(arg)
@@ -91,3 +118,39 @@ class TelegramAdapter(BotAdapter):
             except ValueError:
                 return BotResponse(title="用法", description="/detail 課程ID（數字）")
         return BotResponse(title="未知指令", description=zh_command)
+
+    # -- 啟動 -------------------------------------------------------------
+    def _build_app(self):
+        """建立 Application 並註冊所有 handler（需要 python-telegram-bot）。"""
+        from telegram.ext import Application, CommandHandler  # lazy
+
+        app = Application.builder().token(self.token).build()
+
+        async def help_handler(update, context):
+            await update.message.reply_text(self._help_text(), parse_mode="HTML")
+
+        def make_handler(zh_command: str):
+            async def handler(update, context):
+                arg = " ".join(context.args) if context.args else ""
+                resp = await self._dispatch(zh_command, arg)
+                for chunk in self._chunk(self.render(resp)):
+                    await update.message.reply_text(chunk, parse_mode="HTML")
+            return handler
+
+        app.add_handler(CommandHandler("start", help_handler))
+        app.add_handler(CommandHandler("help", help_handler))
+        for en_command, zh_command in COMMAND_ALIASES.items():
+            app.add_handler(CommandHandler(en_command, make_handler(zh_command)))
+        return app
+
+    def start(self) -> None:
+        if not self.token:
+            raise RuntimeError("缺少 TELEGRAM_BOT_TOKEN（請設定環境變數或 .env）")
+        try:
+            app = self._build_app()
+        except ImportError as exc:
+            raise RuntimeError(
+                "未安裝 Telegram SDK，請執行：pip install python-telegram-bot==21.4"
+            ) from exc
+        logger.info("Telegram adapter 啟動（polling）…")
+        app.run_polling()

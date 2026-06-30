@@ -1,114 +1,127 @@
 # campus-course-bot 🎓
 
-> 一個多平台的課程評價查詢機器人 —— 用關鍵字查甜度／涼度／收穫，選課不再踩雷。
-> A multi-platform course-review query bot (Discord / Telegram / LINE).
+> A multi-platform course-review query bot (Discord / Telegram / LINE) — search by
+> keyword and see "sweetness / easiness / takeaway" ratings to pick courses with confidence.
 
 ---
 
-## ⚠️ 免責聲明 / Disclaimer
+## ⚠️ Disclaimer
 
-**本專案為非官方（unofficial）作品，與 NCKUHUB 平台及國立成功大學（NCKU）無任何隸屬、合作或背書關係。**
-This is an **unofficial** project and is **not affiliated with, endorsed by, or connected to** the NCKUHUB platform or National Cheng Kung University (NCKU).
+**This is an unofficial project and is not affiliated with, endorsed by, or connected to the
+NCKUHUB platform or National Cheng Kung University (NCKU).**
+本專案為非官方作品,與 NCKUHUB 平台及國立成功大學(NCKU)無任何隸屬、合作或背書關係。
 
-- 課程資料來源為 NCKUHUB 的公開課程頁面；本專案**不內附、不散布**任何抓取的資料集，使用者須自行於本機建立快取（見下方）。
-- 評分（甜度／涼度／收穫）與「雷課」皆為**他人主觀評價**，僅供參考，不代表事實，亦不構成對任何教師或課程的評斷。
-- 使用前請自行確認符合資料來源的服務條款與當地法律（個資、著作權、名譽等）。詳見 [PRIVACY.md](PRIVACY.md)。
+- Course data comes from NCKUHUB's public course pages. This project does **not** bundle or
+  redistribute any scraped dataset — you build your own local cache (see below).
+- Ratings (sweetness / easiness / takeaway) and "worst courses" are **other people's subjective
+  opinions**, provided for reference only. They are not facts and are not a judgement of any
+  instructor or course.
+- Before deploying, make sure you comply with the data source's terms of service and your local
+  laws (personal data, copyright, defamation, etc.). See [PRIVACY.md](PRIVACY.md).
 
 ---
 
-## ✨ 功能特色
+## ✨ Features
 
-- 🔍 **課程搜尋** — 關鍵字搜尋課程，顯示甜度／涼度／收穫
-- 👨‍🏫 **教授查詢** — 查看某教授的所有課程平均評價
-- 🍬 **甜課 / 🛋️ 涼課推薦** — 高甜度／高涼度排行
-- ⚔️ **課程 PK** — 兩門課直接比較
-- ⚠️ **雷課警報** — 低分課程提醒（主觀、僅供參考）
-- 💬 **課程詳細** — 即時查看課程心得
+- 🔍 **Course search** — search by keyword; shows sweetness / easiness / takeaway
+- 👨‍🏫 **Professor lookup** — average ratings across a professor's courses
+- 🍬 **Sweet / 🛋️ Easy rankings** — top courses by sweetness / easiness
+- ⚔️ **Course compare** — head-to-head comparison of two courses
+- ⚠️ **Worst-course alert** — low-rated courses (subjective, reference only)
+- 💬 **Course detail** — live fetch of course comments
 
-## 🧩 架構：一套核心，多平台接入
+## 🧩 Architecture: one core, many platforms
 
 ```
 src/
-├── core/                  # 平台無關的核心（不依賴任何聊天平台 SDK）
-│   ├── models.py          #   Course + 中性回應模型 BotResponse
-│   ├── cache.py           #   本地快取與查詢（thefuzz 為選用）
-│   ├── nckuhub_client.py  #   資料抓取（User-Agent + 退避）
-│   └── course_service.py  #   所有指令邏輯 → 回傳 BotResponse
-├── adapters/              # 各平台 adapter（SDK 皆 lazy import）
-│   ├── base.py            #   BotAdapter 介面
-│   ├── discord_adapter.py #   ✅ Discord（已實作）
-│   ├── telegram_adapter.py#   🧪 Telegram（骨架，可運作）
-│   └── line_adapter.py    #   🧪 LINE（骨架 + Webhook 待補）
-└── run.py                 # 進入點，依 BOT_PLATFORM 選擇平台
+├── core/                  # Platform-agnostic core (no chat-platform SDK)
+│   ├── models.py          #   Course + neutral response model (BotResponse)
+│   ├── cache.py           #   Local cache & queries (thefuzz optional)
+│   ├── nckuhub_client.py  #   Data fetching (User-Agent + backoff)
+│   └── course_service.py  #   All command logic → returns BotResponse
+├── adapters/              # Per-platform adapters (SDKs lazy-imported)
+│   ├── base.py            #   BotAdapter interface
+│   ├── discord_adapter.py #   ✅ Discord
+│   ├── telegram_adapter.py#   ✅ Telegram
+│   └── line_adapter.py    #   ✅ LINE
+└── run.py                 # Entrypoint; picks a platform via BOT_PLATFORM
 ```
 
-新增一個平台 = 繼承 `BotAdapter`，實作 `render(BotResponse)` 與 `start()`，核心邏輯完全重用。
+Adding a platform = subclass `BotAdapter` and implement `render(BotResponse)` and `start()`;
+all the core logic is reused.
 
-| 平台 | 狀態 | 連線方式 | 需要的 SDK |
-|------|------|---------|-----------|
-| Discord | ✅ 已實作 | Slash Commands（長連線） | `discord.py`（預設安裝） |
-| Telegram | ✅ 已實作 | Polling | `pip install python-telegram-bot==21.4` |
-| LINE | ✅ 已實作 | Webhook（需對外 HTTPS） | 不需額外 SDK（內建 aiohttp） |
+| Platform | Status | Transport | SDK |
+|----------|--------|-----------|-----|
+| Discord  | ✅ Implemented | Slash commands | `discord.py` (installed by default) |
+| Telegram | ✅ Implemented | Polling | `pip install python-telegram-bot==21.4` |
+| LINE     | ✅ Implemented | Webhook (needs public HTTPS) | None (uses built-in aiohttp) |
 
-## 🚀 快速開始
+## 🚀 Quick start
 
 ```bash
-# 1) 安裝依賴
+# 1) Install dependencies
 pip install -r requirements.txt
 
-# 2) 設定環境變數
+# 2) Configure environment
 cp .env.example .env
-#    編輯 .env：選擇 BOT_PLATFORM，填入對應平台的 Token
+#    Edit .env: pick BOT_PLATFORM and fill in that platform's token
 
-# 3) 建立你自己的課程快取（見下方說明，必要步驟）
+# 3) Build your own course cache (required — see below)
 python build_cache.py
 
-# 4) 啟動（預設 Discord；或用 BOT_PLATFORM=telegram / line）
+# 4) Run (defaults to Discord; or BOT_PLATFORM=telegram / line)
 python src/run.py
 ```
 
-## 🛰️ 各平台設定
+## 🛰️ Per-platform setup
 
-用環境變數 `BOT_PLATFORM` 切換平台（`discord` / `telegram` / `line`）。
+Switch platforms with the `BOT_PLATFORM` environment variable (`discord` / `telegram` / `line`).
 
-**Discord**（Slash Commands）
+**Discord** (slash commands)
 ```bash
 BOT_PLATFORM=discord DISCORD_TOKEN=xxx python src/run.py
 ```
-邀請 bot 進伺服器後即可用：`/課程 /教授 /甜課 /涼課 /比較 /雷課 /詳細`。
+After inviting the bot to a server, use the slash commands `/課程 /教授 /甜課 /涼課 /比較 /雷課 /詳細`
+(search / professor / sweet / easy / compare / worst / detail). Command names are in Chinese
+because the bot serves a Chinese-speaking campus audience.
 
-**Telegram**（Polling）
+**Telegram** (polling)
 ```bash
 pip install python-telegram-bot==21.4
 BOT_PLATFORM=telegram TELEGRAM_BOT_TOKEN=xxx python src/run.py
 ```
-向 [@BotFather](https://t.me/BotFather) 取得 token。指令用英文別名：`/search /professor /sweet /cold /compare /worst /detail`（`/help` 看用法）。
+Get a token from [@BotFather](https://t.me/BotFather). Commands use English aliases:
+`/search /professor /sweet /cold /compare /worst /detail` (`/help` for usage).
 
-**LINE**（Webhook，需 HTTPS）
+**LINE** (webhook, HTTPS required)
 ```bash
 BOT_PLATFORM=line LINE_CHANNEL_ACCESS_TOKEN=xxx LINE_CHANNEL_SECRET=yyy PORT=8000 python src/run.py
 ```
-本服務會在 `PORT` 起一個 `/callback` endpoint（內含 `X-Line-Signature` HMAC 驗證，拒絕未簽章請求）。請以 HTTPS 對外（反向代理或 Railway 等），並在 LINE Developers Console 把 Webhook URL 設為 `https://你的網域/callback`。使用者輸入「課程 微積分」「詳細 1234」等即可。
+This starts a `/callback` endpoint on `PORT` with `X-Line-Signature` HMAC verification (unsigned
+requests are rejected). Expose it over HTTPS (a reverse proxy or a platform such as Railway) and
+set the Webhook URL in the LINE Developers Console to `https://your-domain/callback`. Users send
+messages like `課程 微積分` or `詳細 1234`.
 
-## 🗃️ 建立你自己的快取（重要）
+## 🗃️ Build your own cache (important)
 
-本專案**不附帶**課程資料集。請自行執行 `python build_cache.py` 在本機產生
-`data/course_cache.json`（已列入 `.gitignore`，不會被 commit）。
+This project does **not** ship a course dataset. Run `python build_cache.py` to generate
+`data/course_cache.json` locally (it is `.gitignore`d and never committed).
 
-> 抓取時請尊重資料來源：`core/nckuhub_client.py` 已內建可識別的 User-Agent、
-> 並發限制與請求退避。請勿移除這些禮貌性設定，亦**請勿再次散布**抓取到的資料。
+> Please be respectful to the data source: `core/nckuhub_client.py` already sets an identifying
+> User-Agent, limits concurrency, and backs off between requests. Do not remove these courtesy
+> measures, and **do not redistribute** the scraped data.
 
-## 🔧 技術棧
+## 🔧 Tech stack
 
 - Python 3.10+
-- discord.py 2.x（預設 adapter）
-- aiohttp（非同步 HTTP）
-- thefuzz（選用，模糊搜尋；缺少時自動退化為精確比對）
+- discord.py 2.x (default adapter)
+- aiohttp (async HTTP; also powers the LINE webhook server)
+- thefuzz (optional fuzzy search; falls back to exact matching when absent)
 
-## 🔒 安全與隱私
+## 🔒 Security & privacy
 
-- 漏洞通報：見 [SECURITY.md](SECURITY.md)
-- 隱私說明（資料來源、機器人讀取範圍）：見 [PRIVACY.md](PRIVACY.md)
+- Vulnerability reporting: see [SECURITY.md](SECURITY.md)
+- Privacy notes (data provenance, what the bot reads): see [PRIVACY.md](PRIVACY.md)
 
 ## 📜 License
 

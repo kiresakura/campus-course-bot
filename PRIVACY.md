@@ -1,36 +1,46 @@
-# 隱私與資料使用說明 / Privacy & Data Notice
+# Privacy & Data Notice
 
-> 本文件說明本專案如何處理資料。部署者（自行架設機器人的人）為資料控制者，
-> 須自行確保符合當地法律（如台灣《個人資料保護法》）與資料來源的服務條款。
+> This document explains how the project handles data. The deployer (whoever self-hosts the bot)
+> is the data controller and is responsible for complying with local laws (e.g. Taiwan's Personal
+> Data Protection Act) and the data source's terms of service.
 
-## 1. 資料來源
+## 1. Data source
 
-- 課程評價資料來自 **NCKUHUB** 的公開課程頁面，由部署者透過 `build_cache.py` 自行抓取。
-- 本開源倉庫**不含**任何抓取後的資料集；`data/course_cache.json` 已列入 `.gitignore`。
-- 課程心得屬其原作者／NCKUHUB 所有；本專案僅在使用者主動查詢時即時呈現摘要，
-  **不儲存留言者身分**。
+- Course-review data comes from **NCKUHUB**'s public course pages and is fetched by the deployer
+  via `build_cache.py`.
+- This open-source repository contains **no** scraped dataset; `data/course_cache.json` is
+  `.gitignore`d.
+- Course comments belong to their original authors / NCKUHUB. The bot only shows summaries on
+  demand when a user queries them and **does not store commenter identities**.
 
-## 2. 機器人讀取的範圍
+## 2. What the bot reads
 
-- Discord adapter 僅使用 **Slash Command**，**不啟用** `message_content` 特權 intent，
-  因此不會讀取一般聊天訊息內容。
-- 機器人不會主動蒐集、儲存使用者個資；查詢參數僅用於即時產生回覆。
+- The Discord adapter uses **slash commands only** and does **not** enable the privileged
+  `message_content` intent, so it does not read ordinary chat messages.
+- The bot does not actively collect or store user personal data; query parameters are used only to
+  generate a reply in real time.
 
-## 3. 教師個資與名譽（重要）
+## 3. Instructor personal data & reputation (important)
 
-- 課程資料可能包含**教師姓名**並對應到主觀評分。這屬於對可識別個人的資料處理。
-- 「雷課／低分」等功能呈現的是**他人主觀意見**，不代表事實，請勿用於騷擾、公審或詆毀。
-- 若你是教師且希望相關資料不被本機器人呈現，請透過 repo 的聯絡管道提出，部署者應配合處理。
-- 部署者若公開上線，建議：
-  - 顯著標示「主觀評價、僅供參考」（本專案預設已加上）。
-  - 視情況對教師姓名去識別化或限制「雷課」類功能。
-  - 提供申訴／移除管道。
+- Course data may include **instructor names** mapped to subjective ratings. This constitutes
+  processing of personal data about identifiable individuals.
+- Features like "worst courses / low scores" present **other people's subjective opinions**, not
+  facts. Do not use them for harassment, public shaming, or defamation.
+- If you are an instructor and want related data removed from the bot, please reach out via the
+  repo's contact channels; the deployer should comply.
+- If you deploy publicly, we recommend:
+  - Prominently labelling content as "subjective opinion, for reference only" (the project does
+    this by default).
+  - De-identifying instructor names or limiting "worst course"-style features where appropriate.
+  - Providing an appeal / removal channel.
 
-## 4. 第三方服務
+## 4. Third-party services
 
-- 啟用 Claude／其他 AI 功能：本專案目前**不含**任何 AI／LLM 功能（先前的角色扮演功能已移除）。
-- 各聊天平台（Discord／Telegram／LINE）對訊息的處理，依其各自的隱私政策。
+- AI / LLM features: the project currently contains **no** AI/LLM functionality (the former
+  roleplay feature has been removed).
+- Each chat platform (Discord / Telegram / LINE) handles messages under its own privacy policy.
 
-## 5. 聯絡
+## 5. Contact
 
-資料相關請求或疑問，請透過 repo 的 Issues（非敏感）或 Security 私密回報（敏感）聯繫。
+For data-related requests or questions, use the repo's Issues (non-sensitive) or the Security
+private reporting flow (sensitive).

@@ -1,29 +1,33 @@
 # Security Policy
 
-## 回報漏洞 / Reporting a Vulnerability
+## Reporting a vulnerability
 
-如果你發現安全性問題，請**不要**開公開 issue。請改用：
+If you find a security issue, please **do not** open a public issue. Instead:
 
-- GitHub「Security」分頁 → **Report a vulnerability**（私密回報），或
-- 透過 repo 擁有者的 GitHub 個人頁所列聯絡方式私訊。
+- Use the GitHub **Security** tab → **Report a vulnerability** (private disclosure), or
+- Contact the repo owner privately via the contact details on their GitHub profile.
 
-請盡量提供：重現步驟、影響範圍、可能的修補建議。我們會在合理時間內回覆並協調修補與揭露。
+Please include reproduction steps, impact, and any suggested fix. We will respond within a
+reasonable time and coordinate the fix and disclosure.
 
-If you find a security issue, please **do not** open a public issue. Use GitHub's
-private "Report a vulnerability" flow instead, with reproduction steps and impact.
+## Hardening notes for self-hosters
 
-## 部署者請注意 / Hardening notes for self-hosters
+The bot enables only the minimum permissions each chat platform needs, but when you self-host,
+keep the following in mind:
 
-本機器人預設只啟用聊天平台所需的最小權限，但你自行部署時仍須留意：
+- **Keep tokens secret.** `.env` is `.gitignore`d — never commit any token or key.
+- **Least privilege.** The Discord adapter does not enable the privileged `message_content`
+  intent (it uses slash commands only).
+- **Data scraping.** `build_cache.py` issues many requests to a third-party site; keep the
+  built-in User-Agent, concurrency limit, and backoff, and respect that site's terms of service.
+  Do not redistribute the scraped `data/course_cache.json`.
+- **No unauthenticated admin endpoints.** This project removed the previous REST API server and
+  its `/cache/rebuild` endpoint to avoid being used as an attack amplifier.
+- **Input handling.** User-facing replies never include raw exception text (to avoid information
+  leakage); details are logged server-side only.
+- **LINE webhook.** The LINE adapter verifies the `X-Line-Signature` HMAC on every request and
+  rejects unsigned ones; always expose it over HTTPS.
 
-- **權杖保密**：`.env` 已被 `.gitignore` 排除，切勿 commit 任何 Token / 金鑰。
-- **最小權限**：Discord adapter 不啟用 `message_content` 特權 intent（只用 Slash Command）。
-- **資料抓取**：`build_cache.py` 會對第三方網站發出大量請求；請保留內建的 User-Agent、
-  並發限制與退避，並遵守對方服務條款。請勿將抓取到的 `data/course_cache.json` 散布。
-- **不要新增無認證的對外管理端點**（本專案已移除先前的 REST API server 與其
-  `/cache/rebuild` 端點，以避免被當成攻擊跳板）。
-- **輸入處理**：所有對外回覆皆不直接夾帶原始例外訊息（避免資訊外洩）。
+## Supported versions
 
-## 支援範圍
-
-僅維護 `main` 分支的最新版本。
+Only the latest version on the `main` branch is maintained.

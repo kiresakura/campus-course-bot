@@ -1,20 +1,19 @@
-# NCKUHUB Discord Bot - Python 依賴套件
+# campus-course-bot - Python 依賴套件
+# 版本鎖定（pinned）以確保可重現與供應鏈安全
 
-# Discord Bot 框架
-discord.py>=2.3.0
+# Discord adapter（預設平台）
+discord.py==2.4.0
 
 # 非同步 HTTP 請求
-aiohttp>=3.8.0
+aiohttp==3.9.5
 
 # 環境變數管理
-python-dotenv>=1.0.0
-thefuzz>=0.22.1
-python-Levenshtein>=0.25.0
+python-dotenv==1.0.1
 
-# Claude API (RAG 角色扮演)
-anthropic>=0.39.0
+# 模糊搜尋
+thefuzz==0.22.1
+python-Levenshtein==0.25.1
 
-# REST API Server
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-aiofiles>=23.2.0
+# --- 選用：其他平台 adapter 的 SDK（需要時才安裝） ---
+# Telegram:  pip install python-telegram-bot==21.4
+# LINE:      pip install line-bot-sdk==3.11.0

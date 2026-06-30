@@ -38,9 +38,9 @@ class NCKUHubBot(commands.Bot):
     """NCKUHUB 查詢機器人"""
     
     def __init__(self):
+        # 只用 Slash Commands，不需要讀取訊息內容（移除特權 intent，最小權限）
         intents = discord.Intents.default()
-        intents.message_content = True
-        
+
         super().__init__(
             command_prefix='!',  # 保留傳統指令前綴（備用）
             intents=intents,
@@ -53,13 +53,6 @@ class NCKUHubBot(commands.Bot):
         await self.load_extension('commands')
         logger.info("已載入課程查詢指令模組")
 
-        # 載入李鴻章 RAG 指令模組
-        try:
-            await self.load_extension('rag_commands')
-            logger.info("已載入李鴻章角色扮演模組")
-        except Exception as e:
-            logger.warning(f"李鴻章模組載入失敗: {e}")
-        
         # 同步 Slash Commands
         guild_id = os.getenv('GUILD_ID')
         if guild_id:

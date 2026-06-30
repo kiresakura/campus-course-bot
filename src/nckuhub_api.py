@@ -8,7 +8,6 @@ import asyncio
 import json
 import os
 import logging
-import aiofiles
 from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime
@@ -85,8 +84,13 @@ class NCKUHubAPI:
             except Exception as e:
                 logger.error(f"[Cache] 載入失敗: {e}")
     
+    def _write_cache_file(self, data: dict):
+        """同步寫檔（由 _save_cache_async 透過執行緒呼叫，避免阻塞事件迴圈）"""
+        with open(self.cache_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
     async def _save_cache_async(self):
-        """非同步儲存快取到本地"""
+        """儲存快取到本地（寫檔丟到執行緒，不阻塞事件迴圈）"""
         os.makedirs(self.cache_dir, exist_ok=True)
         data = {
             'last_updated': datetime.now().isoformat(),
@@ -95,8 +99,7 @@ class NCKUHubAPI:
             'by_dept': self.by_dept
         }
         try:
-            async with aiofiles.open(self.cache_file, 'w', encoding='utf-8') as f:
-                await f.write(json.dumps(data, ensure_ascii=False, indent=2))
+            await asyncio.to_thread(self._write_cache_file, data)
             logger.info(f"[Cache] 已儲存 {len(self.cache)} 門課程")
         except Exception as e:
             logger.error(f"[Cache] 儲存失敗: {e}")

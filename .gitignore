@@ -10,8 +10,8 @@ ENV/
 # 環境變數（重要！不要上傳 Token）
 .env
 
-# 快取資料（保留以便部署）
-# data/course_cache.json
+# 快取資料：請勿散布抓取到的第三方資料集，使用者自行 build_cache.py 產生
+data/course_cache.json
 
 # 日誌
 logs/*.log

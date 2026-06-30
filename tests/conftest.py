@@ -7,7 +7,7 @@ SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
 
-FIXTURE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "course_cache.json")
+FIXTURE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "sample_cache.json")
 
 
 @pytest.fixture

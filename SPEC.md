@@ -1,12 +1,15 @@
-# NCKUHUB Discord Bot - 技術規格書
+# campus-course-bot - 技術規格書
+
+> ⚠️ 非官方專案，與 NCKUHUB 及成功大學（NCKU）無任何隸屬關係。本文件為早期設計紀錄，
+> 部分內容已隨重構調整（已移除對外 API server、改為多平台 adapter 架構）。
 
 ## 1. 專案概述
 
 ### 1.1 目標
-建立一個 Discord Bot，透過 NCKUHUB 公開 API 提供課程評價查詢服務，幫助成大學生選課決策。
+建立一個課程評價查詢機器人（多平台：Discord／Telegram／LINE），幫助學生選課決策。
 
 ### 1.2 核心發現
-NCKUHUB 提供公開 JSON API：
+NCKUHUB 的課程頁面會回傳 JSON（**非官方文件化的端點**，使用前請確認其服務條款）：
 ```
 GET https://nckuhub.com/course/{課程ID}
 ```

@@ -94,8 +94,9 @@ class CourseCache:
             or keyword in c.get("teacher", "").lower()
             or keyword in c.get("dept", "").lower()
         ]
+        exact.sort(key=lambda x: x.get("rate_count", 0), reverse=True)
         if len(exact) >= 5 or not _HAS_FUZZ:
-            return sorted(exact, key=lambda x: x.get("rate_count", 0), reverse=True)[:limit]
+            return exact[:limit]
 
         choices = {
             cid: f"{c.get('name', '')} {c.get('teacher', '')} {c.get('dept', '')}"
@@ -106,12 +107,11 @@ class CourseCache:
         )
         matched_ids = [res[2] for res in fuzzy if res[1] > 50]
 
+        # Exact substring matches always rank ahead of fuzzy-only matches.
         seen = {c["id"] for c in exact}
-        for mid in matched_ids:
-            if mid not in seen:
-                exact.append(self.cache[mid])
-                seen.add(mid)
-        return sorted(exact, key=lambda x: x.get("rate_count", 0), reverse=True)[:limit]
+        extra = [self.cache[mid] for mid in matched_ids if mid not in seen]
+        extra.sort(key=lambda x: x.get("rate_count", 0), reverse=True)
+        return (exact + extra)[:limit]
 
     def get_professor_courses(self, name: str) -> List[dict]:
         course_ids = self.by_teacher.get(name)

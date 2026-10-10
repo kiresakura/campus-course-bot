@@ -93,6 +93,15 @@ def test_search_falls_back_to_fuzzy_matching(make_cache):
     assert [c["id"] for c in cache.search_course("Calculsu")] == ["1"]
 
 
+@needs_fuzz
+def test_search_ranks_exact_matches_before_fuzzy_matches(make_cache):
+    cache = make_cache(
+        _course("1", "微積分（一）", rate_count=2),
+        _course("2", "微積分（二）", rate_count=9),  # fuzzy-only match with more ratings
+    )
+    assert [c["id"] for c in cache.search_course("微積分（一）")] == ["1", "2"]
+
+
 # -------------------------------- professor -------------------------------
 def test_professor_exact_match(make_cache):
     cache = make_cache(_course("1", "A", teacher="Lin"), _course("2", "B", teacher="Lin"), _course("3", "C", teacher="Wu"))

@@ -62,7 +62,8 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--demo",
         action="store_true",
-        help="Use the bundled fictional sample courses instead of data/course_cache.json (fully offline)",
+        help="Use the bundled fictional sample courses instead of data/course_cache.json "
+        "(course data never touches the network)",
     )
     args = parser.parse_args(argv)
 
@@ -73,7 +74,7 @@ def main(argv=None) -> int:
 
     if args.demo:
         service = build_demo_service()
-        logging.info("Demo mode: fictional sample courses (not real courses or people); no network access")
+        logging.info("Demo mode: fictional sample courses (not real courses or people), served offline")
     else:
         service = CourseService(CACHE_FILE)
     if service.cache.is_empty:

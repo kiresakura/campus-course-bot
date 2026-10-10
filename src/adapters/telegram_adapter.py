@@ -16,22 +16,11 @@ from typing import Optional
 
 from core.course_service import CourseService
 from core.models import BotResponse
-from .base import BotAdapter
+from .base import COMMAND_ALIASES, BotAdapter
 
 logger = logging.getLogger(__name__)
 
 TELEGRAM_MSG_LIMIT = 4096
-
-# English alias → Chinese command (Telegram disallows non-alphanumeric command names)
-COMMAND_ALIASES = {
-    "search": "課程",
-    "professor": "教授",
-    "sweet": "甜課",
-    "cold": "涼課",
-    "compare": "比較",
-    "worst": "雷課",
-    "detail": "詳細",
-}
 
 
 class TelegramAdapter(BotAdapter):

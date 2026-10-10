@@ -15,6 +15,18 @@ from core.models import BotResponse
 # service method itself.
 COMMANDS = ("課程", "教授", "甜課", "涼課", "比較", "雷課", "詳細")
 
+# English alias → Chinese command (Telegram disallows non-alphanumeric command
+# names; the terminal adapter accepts these aliases too)
+COMMAND_ALIASES = {
+    "search": "課程",
+    "professor": "教授",
+    "sweet": "甜課",
+    "cold": "涼課",
+    "compare": "比較",
+    "worst": "雷課",
+    "detail": "詳細",
+}
+
 
 class BotAdapter(ABC):
     """Base class for all platform adapters."""

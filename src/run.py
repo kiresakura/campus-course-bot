@@ -1,7 +1,7 @@
 """campus-course-bot entrypoint.
 
 Selects which platform adapter to start based on the BOT_PLATFORM environment
-variable (or --platform): discord (default) / telegram / line.
+variable (or --platform): discord (default) / telegram / line / cli.
 
 Unofficial project, not affiliated with NCKUHUB or National Cheng Kung University.
 """
@@ -41,7 +41,11 @@ def build_adapter(platform: str, service: CourseService):
         from adapters.line_adapter import LineAdapter
 
         return LineAdapter(service)
-    raise RuntimeError(f"Unknown platform '{platform}' (available: discord / telegram / line)")
+    if platform == "cli":
+        from adapters.cli_adapter import CliAdapter
+
+        return CliAdapter(service)
+    raise RuntimeError(f"Unknown platform '{platform}' (available: discord / telegram / line / cli)")
 
 
 def main(argv=None) -> int:
@@ -52,7 +56,7 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--platform",
         default=os.getenv("BOT_PLATFORM", "discord"),
-        help="Platform to start: discord (default) / telegram / line",
+        help="Platform to start: discord (default) / telegram / line / cli (terminal, no account needed)",
     )
     args = parser.parse_args(argv)
 

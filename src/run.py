@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from dotenv import load_dotenv
 
 from core.course_service import CourseService
+from core.demo import build_demo_service
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE_FILE = os.path.join(PROJECT_ROOT, "data", "course_cache.json")
@@ -58,6 +59,11 @@ def main(argv=None) -> int:
         default=os.getenv("BOT_PLATFORM", "discord"),
         help="Platform to start: discord (default) / telegram / line / cli (terminal, no account needed)",
     )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Use the bundled fictional sample courses instead of data/course_cache.json (fully offline)",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -65,9 +71,13 @@ def main(argv=None) -> int:
         format="%(asctime)s [%(levelname)s] %(message)s",
     )
 
-    service = CourseService(CACHE_FILE)
+    if args.demo:
+        service = build_demo_service()
+        logging.info("Demo mode: fictional sample courses (not real courses or people); no network access")
+    else:
+        service = CourseService(CACHE_FILE)
     if service.cache.is_empty:
-        logging.warning("Course cache is empty; run: python build_cache.py")
+        logging.warning("Course cache is empty; run: python build_cache.py (or try --demo)")
 
     try:
         adapter = build_adapter(args.platform, service)

@@ -10,6 +10,8 @@
   via `build_cache.py`.
 - This open-source repository contains **no** scraped dataset; `data/course_cache.json` is
   `.gitignore`d.
+- The only bundled course data is `examples/fictional_courses.json` (used by `--demo`): invented
+  courses, instructors, ratings and comments that describe no real course or person.
 - Course comments belong to their original authors / NCKUHUB. The bot only shows summaries on
   demand when a user queries them and **does not store commenter identities**.
 

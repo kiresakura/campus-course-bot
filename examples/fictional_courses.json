@@ -1,0 +1,112 @@
+{
+  "_notice": "FICTIONAL DEMO DATA. Every course, department, instructor, rating and comment in this file is invented for demonstration only. It is not scraped and does not describe any real course or person. 本檔為虛構示範資料：所有課程、系所、教師、評分與心得皆為杜撰，並非爬取資料，也不對應任何真實課程或人物。",
+  "last_updated": "2026-01-01T00:00:00",
+  "courses": {
+    "101": {
+      "id": "101", "name": "龍類飼育學 Dragon Husbandry", "dept": "神話生物系 MYTH", "teacher": "Ember",
+      "sweet": 8.6, "cold": 4.2, "got": 9.1, "rate_count": 27,
+      "comments": [
+        {"semester": "114-1", "comment": "老師第一堂課就說：「龍不是寵物，是同事。」整學期都在實習農場輪班，早上餵食、下午量體溫、晚上寫觀察日誌。期中考是現場實作，要在十分鐘內讓幼龍乖乖讓你刷牙；期末則是分組報告，題目從龍蛋孵化溫度到龍鱗保養都有。作業量真的不小，熬夜寫日誌是常態，衣服也常被烤出小洞，但老師的回饋超仔細，每份日誌都會被寫滿建議。修完之後對生物、對責任感的理解都完全不一樣，非常推薦給願意投入時間的人。唯一的缺點是實習農場離宿舍很遠，每週都要早起搭接駁車。"},
+        {"semester": "113-2", "comment": "記得帶防火手套。給分公道，只要日誌有交就不會太差。"},
+        {"semester": "113-1", "comment": "Ember 老師講野外觀察的故事超好聽，常常講到忘記下課。"}
+      ]
+    },
+    "102": {
+      "id": "102", "name": "獨角獸行為觀察 Unicorn Behavior Lab", "dept": "神話生物系 MYTH", "teacher": "Ember",
+      "sweet": 9.2, "cold": 8.8, "got": 6.0, "rate_count": 14,
+      "comments": [
+        {"semester": "114-1", "comment": "每週到草原拍照寫紀錄就好，很涼，但學到的東西不多。"},
+        {"semester": "113-2", "comment": "期末報告只要交一本觀察相簿，給分很甜。"}
+      ]
+    },
+    "103": {
+      "id": "103", "name": "時光旅行倫理學 Ethics of Time Travel", "dept": "時空工程系 TIME", "teacher": "Chrono",
+      "sweet": 7.4, "cold": 6.1, "got": 8.8, "rate_count": 19,
+      "comments": [
+        {"semester": "114-1", "comment": "每堂課都在吵祖父悖論，期末是一篇思辨小論文。"},
+        {"semester": "113-1", "comment": "點名方式是確認你沒有從未來提早回來上課（誤）。"}
+      ]
+    },
+    "104": {
+      "id": "104", "name": "平行宇宙統計學 Multiverse Statistics", "dept": "時空工程系 TIME", "teacher": "Chrono",
+      "sweet": 3.1, "cold": 2.4, "got": 7.9, "rate_count": 11,
+      "comments": [
+        {"semester": "114-1", "comment": "作業要在三個平行宇宙各算一次，計算量驚人。"},
+        {"semester": "113-2", "comment": "考試很難，但修完看什麼都像機率分布。"}
+      ]
+    },
+    "105": {
+      "id": "105", "name": "火星農業概論 Intro to Martian Farming", "dept": "星際農業系 ASTR", "teacher": "Nova",
+      "sweet": 8.1, "cold": 9.0, "got": 5.5, "rate_count": 22,
+      "comments": [
+        {"semester": "114-1", "comment": "主要在溫室種馬鈴薯，期末可以吃到自己種的成果。"}
+      ]
+    },
+    "106": {
+      "id": "106", "name": "小行星採礦實習 Asteroid Mining Practicum", "dept": "星際農業系 ASTR", "teacher": "Nova",
+      "sweet": 2.2, "cold": 1.8, "got": 3.0, "rate_count": 6,
+      "comments": [
+        {"semester": "114-1", "comment": "實習時數很長，報告格式要求嚴格，要有心理準備。"},
+        {"semester": "113-2", "comment": "模擬器常當機，進度一直延後。"}
+      ]
+    },
+    "107": {
+      "id": "107", "name": "鍊金術導論 Introduction to Alchemy", "dept": "鍊金化學系 ALCH", "teacher": "Quill",
+      "sweet": 6.5, "cold": 7.2, "got": 7.0, "rate_count": 9,
+      "comments": [
+        {"semester": "113-2", "comment": "鉛變金的實驗一次都沒成功過，但講義寫得很扎實。"}
+      ]
+    },
+    "108": {
+      "id": "108", "name": "隱形墨水化學 Invisible Ink Chemistry", "dept": "鍊金化學系 ALCH", "teacher": "Quill",
+      "sweet": 9.5, "cold": 9.4, "got": 4.1, "rate_count": 31,
+      "comments": [
+        {"semester": "114-1", "comment": "考卷用隱形墨水印，要自己帶檸檬汁（開玩笑的）。給分非常甜。"},
+        {"semester": "113-1", "comment": "輕鬆好過，適合拿來平衡課表。"}
+      ]
+    },
+    "109": {
+      "id": "109", "name": "機器人詩歌創作 Robot Poetry Workshop", "dept": "跨物種語言系 XLNG", "teacher": "Mochi",
+      "sweet": 8.9, "cold": 7.7, "got": 8.2, "rate_count": 16,
+      "comments": [
+        {"semester": "114-1", "comment": "每週和機器人合寫一首十四行詩，期末辦朗讀會。"}
+      ]
+    },
+    "110": {
+      "id": "110", "name": "貓語會話（一） Conversational Cat I", "dept": "跨物種語言系 XLNG", "teacher": "Mochi",
+      "sweet": 9.8, "cold": 9.6, "got": 2.5, "rate_count": 40,
+      "comments": [
+        {"semester": "114-1", "comment": "喵。喵喵。喵——（上課內容大概就是這樣）"},
+        {"semester": "113-2", "comment": "超涼超甜，但除了跟家裡的貓吵架以外沒什麼用。"}
+      ]
+    },
+    "111": {
+      "id": "111", "name": "失傳料理復刻 Lost Recipe Revival", "dept": "奇想設計系 WHIM", "teacher": "Saga",
+      "sweet": 5.0, "cold": 5.5, "got": 6.0, "rate_count": 3,
+      "comments": [
+        {"semester": "114-1", "comment": "每週重現一道古代料理，好不好吃全看運氣。"}
+      ]
+    },
+    "112": {
+      "id": "112", "name": "夢境建築學 Dream Architecture", "dept": "奇想設計系 WHIM", "teacher": "Saga",
+      "sweet": 0.0, "cold": 0.0, "got": 0.0, "rate_count": 0,
+      "comments": []
+    }
+  },
+  "by_teacher": {
+    "Ember": ["101", "102"],
+    "Chrono": ["103", "104"],
+    "Nova": ["105", "106"],
+    "Quill": ["107", "108"],
+    "Mochi": ["109", "110"],
+    "Saga": ["111", "112"]
+  },
+  "by_dept": {
+    "神話生物系 MYTH": ["101", "102"],
+    "時空工程系 TIME": ["103", "104"],
+    "星際農業系 ASTR": ["105", "106"],
+    "鍊金化學系 ALCH": ["107", "108"],
+    "跨物種語言系 XLNG": ["109", "110"],
+    "奇想設計系 WHIM": ["111", "112"]
+  }
+}

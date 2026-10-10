@@ -5,6 +5,7 @@ __pycache__/
 *.so
 .Python
 venv/
+.venv/
 ENV/
 
 # 環境變數（重要！不要上傳 Token）
